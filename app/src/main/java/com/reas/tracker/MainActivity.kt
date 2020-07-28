@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         requestRole()
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
