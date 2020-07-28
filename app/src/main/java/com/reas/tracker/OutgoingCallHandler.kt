@@ -33,11 +33,9 @@ class OutgoingCallHandler : CallRedirectionService() {
 
             // Launches MainActivity
             startActivity(intent)
+
+        } else {
+            placeCallUnmodified()
         }
-
-
-
     }
-
-
 }
