@@ -9,6 +9,8 @@ import android.os.Bundle
 import android.provider.Telephony
 import android.util.Log
 import android.view.Menu
+import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -20,8 +22,13 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import com.google.gson.Gson
 import com.reas.tracker.service.SMS.SMSBaseObject
+import kotlinx.android.synthetic.main.activity_login.*
+import kotlinx.android.synthetic.main.nav_header_main.*
 import java.io.File
 import java.io.FileWriter
 
@@ -36,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var navView: NavigationView
     lateinit var navController: NavController
 
+    private lateinit var auth: FirebaseAuth
 
     val REQUEST_ID: Int = 1;
     val permissions = arrayOf(
@@ -71,29 +79,37 @@ class MainActivity : AppCompatActivity() {
 
 
 
-
-
-
         jsonUSSDDirectory = getExternalFilesDir(null).toString() + "/USSDResponse.json"
         smsDirectory = getExternalFilesDir(null).toString() + "/SMS.json"
 
         firstLaunchCheck()
 
+        val storage = Firebase.storage
+        var storageRef = storage.reference
+
+        val smsJsonRef = storageRef.child("json/SMS.json")
+        val ussdJsonRef = storageRef.child("json/USSD.json")
+
+
+        val bundle = intent.getBundleExtra("bundle")
+
+        Log.d("TAG", "onCreate: ${bundle.getString("email")}")
+        Log.d("TAG", "onCreate: ${bundle.getString("name")}")
 
 
 
+        val userEmail = navView.getHeaderView(0).findViewById<TextView>(R.id.userEmail)
+        val userName = navView.getHeaderView(0).findViewById<TextView>(R.id.userName)
 
+
+        userEmail.text = bundle.getString("email")
+        userName.text = bundle.getString("name") ?: ""
 
 
 
 
     }
 
-    override fun onStart() {
-        super.onStart()
-
-
-    }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.

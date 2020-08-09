@@ -15,7 +15,7 @@ class OutgoingCallHandler : CallRedirectionService() {
     ) {
         var blockCall: Boolean = false
 
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = Intent(this, LoginActivity::class.java)
         intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
 
         // Number that is dialed
