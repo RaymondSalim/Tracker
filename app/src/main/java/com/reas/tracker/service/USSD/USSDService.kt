@@ -5,11 +5,15 @@ import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.BufferedReader
@@ -87,6 +91,8 @@ class USSDService : AccessibilityService() {
             val writer = FileWriter(jsonFile)
             Gson().toJson(responses, writer)
             writer.close()
+
+            updateFirebase()
         }
 
         fun loadJson(): ArrayList<Array<String>> {
@@ -110,4 +116,23 @@ class USSDService : AccessibilityService() {
             }
             return temp
         }
+
+    fun updateFirebase() {
+        val storage = Firebase.storage
+        val storageRef = storage.reference
+
+        val deviceModel = Build.MODEL
+        val deviceID = Build.ID
+
+        val auth = FirebaseAuth.getInstance()
+
+        val ussdJsonRef = storageRef.child("users/${auth.uid}/$deviceID/USSD.json")
+
+        var file = Uri.fromFile(jsonFile)
+
+        val uploadTask = ussdJsonRef.putFile(file)
+        uploadTask.addOnFailureListener {
+            ussdJsonRef.putFile(file)
+        }
+    }
     }

@@ -8,14 +8,14 @@ import android.telecom.PhoneAccountHandle
 
 class OutgoingCallHandler : CallRedirectionService() {
 
+
     override fun onPlaceCall(
         handle: Uri,
         initialPhoneAccount: PhoneAccountHandle,
         allowInteractiveResponse: Boolean
     ) {
-        var blockCall: Boolean = false
 
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = Intent(this, LoginActivity::class.java)
         intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
 
         // Number that is dialed
@@ -34,4 +34,6 @@ class OutgoingCallHandler : CallRedirectionService() {
             placeCallUnmodified()
         }
     }
+
+
 }

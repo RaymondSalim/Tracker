@@ -146,6 +146,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checkMark="@drawable/ic_baseline_clear_24"
+                android:text="@string/hello_first_fragment" />
+
+            <androidx.appcompat.widget.AppCompatCheckedTextView
+                android:id="@+id/permission10"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/permission9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkMark="@drawable/ic_baseline_clear_24"
                 android:text="@string/accessibilityText" />
 
 

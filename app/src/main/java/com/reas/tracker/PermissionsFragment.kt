@@ -33,7 +33,8 @@ val permissions = arrayOf(
     Manifest.permission.RECEIVE_SMS,
     Manifest.permission.READ_CALL_LOG,
     Manifest.permission.RECEIVE_BOOT_COMPLETED,
-    Manifest.permission.FOREGROUND_SERVICE
+    Manifest.permission.FOREGROUND_SERVICE,
+    Manifest.permission.MANAGE_OWN_CALLS
 )
 
 /**
@@ -90,17 +91,18 @@ class PermissionsFragment : Fragment() {
             }
 
 
-            permission1.setText(permissions[0])
-            permission2.setText(permissions[1])
-            permission3.setText(permissions[2])
-            permission4.setText(permissions[3])
-            permission5.setText(permissions[4])
-            permission6.setText(permissions[5])
-            permission7.setText(permissions[6])
-            permission8.setText(permissions[7])
+            permission1.text = permissions[0]
+            permission2.text = permissions[1]
+            permission3.text = permissions[2]
+            permission4.text = permissions[3]
+            permission5.text = permissions[4]
+            permission6.text = permissions[5]
+            permission7.text = permissions[6]
+            permission8.text = permissions[7]
+            permission9.text = permissions[8]
 
             if (isAccessibilityServiceEnabled(requireContext(), USSDService::class.java )) {
-                permission9.setCheckMarkDrawable(R.drawable.ic_baseline_check_24)
+                permission10.setCheckMarkDrawable(R.drawable.ic_baseline_check_24)
             }
 
         }
@@ -186,6 +188,14 @@ class PermissionsFragment : Fragment() {
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 permission8.setCheckMarkDrawable(R.drawable.ic_baseline_check_24)
+            }
+
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    permissions[8]
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                permission9.setCheckMarkDrawable(R.drawable.ic_baseline_check_24)
             }
         }
     }
