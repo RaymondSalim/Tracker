@@ -55,7 +55,6 @@ class SMSRecyclerViewAdapter(
         timeFormat.timeZone = java.util.TimeZone.getDefault()
         dateFormat.timeZone = java.util.TimeZone.getDefault()
 
-        Log.d("TAG", "onBindViewHolder: ${timeFormat.format(calender.time)}")
 
         holder.date.text = dateFormat.format(calender.time)
         holder.time.text = timeFormat.format(calender.time)

