@@ -16,7 +16,10 @@
             android:layout_width="wrap_content"
             android:layout_height="28dp"
             android:layout_alignParentLeft="true"
+            android:layout_marginLeft="8dp"
             android:layout_toStartOf="@+id/date"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
             android:hint="smsSender"
             android:text="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
             android:textSize="21sp" />
@@ -27,7 +30,9 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/smsSender"
-            android:hint="smsMessage"
+            android:layout_marginLeft="20dp"
+            android:layout_alignRight="@id/smsSender"
+            android:hint="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
             android:singleLine="true"
             android:layout_toEndOf="@+id/smsSender"/>
 
@@ -38,15 +43,17 @@
             android:hint="77/77/7777"
             android:textAlignment="viewEnd"
             android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"/>
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="8dp"/>
 
         <TextView
             android:id="@+id/time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/date"
+            android:layout_alignBottom="@id/smsSummary"
             android:layout_alignParentRight="true"
-            android:hint="00:00" />
+            android:hint="00:00"
+            android:layout_marginRight="8dp"/>
 
     </RelativeLayout>
 
