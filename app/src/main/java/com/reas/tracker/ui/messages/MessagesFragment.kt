@@ -1,9 +1,8 @@
 package com.reas.tracker.ui.messages
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
@@ -21,10 +20,10 @@ import java.io.FileReader
 import java.util.HashMap
 
 class MessagesFragment : Fragment() {
-    lateinit var SMSRecyclerViewAdapter: com.reas.tracker.ui.messages.SMSRecyclerViewAdapter
-    lateinit var recyclerView: RecyclerView
-    lateinit var data: HashMap<String, ArrayList<SMSBaseObject>>
-    lateinit var jsonFile: File
+    private lateinit var smsRecyclerViewAdapter: com.reas.tracker.ui.messages.SMSRecyclerViewAdapter
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var data: HashMap<String, ArrayList<SMSBaseObject>>
+    private lateinit var jsonFile: File
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,9 +58,36 @@ class MessagesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         recyclerView = view.findViewById(R.id.messagesRecyclerView)
-        SMSRecyclerViewAdapter = SMSRecyclerViewAdapter(requireActivity(), data)
-        recyclerView.adapter = SMSRecyclerViewAdapter
+        smsRecyclerViewAdapter = SMSRecyclerViewAdapter(requireActivity(), data)
+        recyclerView.adapter = smsRecyclerViewAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.menu_messages, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.reloadMessages -> {
+                // Updates the data with the newest file
+                data.clear()
+//                data.addAll(loadJson()) TODO
+//                updateAdapter()
+                return true
+            }
+
+            R.id.deleteAllMessages -> {
+                jsonFile.delete()
+                jsonFile.createNewFile()
+                data.clear()
+//                updateAdapter()
+                Toast.makeText(requireContext(), "Messages deleted", Toast.LENGTH_SHORT).show()
+                return true
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
     }
 
     fun loadJson(): HashMap<String, ArrayList<SMSBaseObject>> {

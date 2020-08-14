@@ -1,6 +1,7 @@
 package com.reas.tracker.ui.messages
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.reas.tracker.R
 import com.reas.tracker.service.SMS.SMSBaseObject
+import com.reas.tracker.ui.messages.chat.ChatActivity
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -44,20 +46,32 @@ class SMSRecyclerViewAdapter(
         val calender = Calendar.getInstance()
         var mCurrent = listOfKeys[position]
 
+        holder.context = context
+        holder.key = listOfKeys[position]
         holder.smsSender.text = mCurrent
 
-        calender.timeZone = java.util.TimeZone.getDefault()
+
+        calender.timeZone = TimeZone.getDefault()
         calender.timeInMillis = smsBaseObject!!.getTime()//arrays.getTime()
-        calender.timeZone = java.util.TimeZone.getDefault()
+        calender.timeZone = TimeZone.getDefault()
 
         val dateFormat = SimpleDateFormat("dd/MM/yyyy")
         val timeFormat = SimpleDateFormat("HH:mm")
-        timeFormat.timeZone = java.util.TimeZone.getDefault()
-        dateFormat.timeZone = java.util.TimeZone.getDefault()
+        timeFormat.timeZone = TimeZone.getDefault()
+        dateFormat.timeZone = TimeZone.getDefault()
 
 
         holder.date.text = dateFormat.format(calender.time)
         holder.time.text = timeFormat.format(calender.time)
+
+        holder.itemView.setOnClickListener {
+                Log.d("TAG", "onClick: clicked ${listOfKeys[position]}")
+                val chatIntent = Intent(context, ChatActivity::class.java)
+                chatIntent.putExtra("key", listOfKeys[position])
+                context!!.startActivity(chatIntent)
+
+        }
+
 
         // Old code without Sort
         /**
@@ -89,11 +103,13 @@ class SMSRecyclerViewAdapter(
     }
 
 
-    class Holder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener{
+    class Holder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var summarySMS: TextView
         var date: TextView
         var time: TextView
         var smsSender: TextView
+        var key: String? = null
+        var context: Context? = null
 
         init {
             with(itemView) {
@@ -105,12 +121,10 @@ class SMSRecyclerViewAdapter(
 
         }
 
-        override fun onClick(v: View?) {
-            TODO("Not yet implemented")
-        }
+
     }
 
-    fun sortHashMap(hashMap: HashMap<String, ArrayList<SMSBaseObject>>): SortedMap<String, SMSBaseObject> {
+    private fun sortHashMap(hashMap: HashMap<String, ArrayList<SMSBaseObject>>): SortedMap<String, SMSBaseObject> {
         val output: HashMap<String, SMSBaseObject> = HashMap<String, SMSBaseObject>()
         hashMap.forEach {
             val key = it.key
@@ -119,7 +133,6 @@ class SMSRecyclerViewAdapter(
             output[key] = smsBaseObject
         }
 
-        val sorted = output.toSortedMap(compareByDescending { output[it]?.getTime() })
-        return sorted
+        return output.toSortedMap(compareByDescending { output[it]?.getTime() })
     }
 }
