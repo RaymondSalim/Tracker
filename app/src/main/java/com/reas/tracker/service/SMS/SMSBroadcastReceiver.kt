@@ -53,7 +53,7 @@ class SMSBroadcastReceiver: BroadcastReceiver() {
                         var msgBody = smsMessage.messageBody
                         var msgTime = System.currentTimeMillis()
 
-                        var smsBaseObject = SMSBaseObject(msgBody, msgTime)
+                        var smsBaseObject = SMSBaseObject(msgBody, msgTime, "Incoming")
 
                         // Checks if there are existing messages from the same address
                         if (smsMessages.containsKey(msgFrom)) {
