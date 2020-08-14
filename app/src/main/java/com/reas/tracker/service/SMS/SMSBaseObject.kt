@@ -3,13 +3,15 @@ package com.reas.tracker.service.SMS
 import com.google.gson.JsonObject
 import com.reas.tracker.service.calls.CallBaseObject
 
-class SMSBaseObject(message: String, time: Long) {
+class SMSBaseObject(message: String, time: Long, direction: String) {
     var mMessage: String
     var mTime: Long = 0
+    var mDirection: String
 
     init {
         this.mMessage = message
         this.mTime = time
+        this.mDirection = direction
     }
 
     fun getBody(): String {
@@ -18,6 +20,10 @@ class SMSBaseObject(message: String, time: Long) {
 
     fun getTime(): Long {
         return mTime
+    }
+
+    fun getDirection(): String {
+        return mDirection
     }
 
     override fun hashCode(): Int {
