@@ -40,6 +40,9 @@
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" />
 
+        <activity
+            android:name="com.reas.tracker.ui.messages.chat.ChatActivity" />
+
         <service
             android:name=".OutgoingCallHandler"
             android:permission="android.permission.BIND_CALL_REDIRECTION_SERVICE">
