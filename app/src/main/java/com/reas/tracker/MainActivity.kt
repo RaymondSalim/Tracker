@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.CallLog
 import android.provider.Telephony
-import android.telecom.Call
 import android.util.Log
 import android.view.Menu
 import android.widget.TextView
@@ -131,9 +130,6 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
-
-
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_ID) {
@@ -240,67 +236,127 @@ class MainActivity : AppCompatActivity() {
 
         val type = object : TypeToken<HashMap<String, ArrayList<SMSBaseObject>>>() {}.type
 
-        var smsHashMap: HashMap<String, ArrayList<SMSBaseObject>> = Gson().fromJson(reader, type) ?: HashMap<String, ArrayList<SMSBaseObject>>()
+        var smsHashMap: HashMap<String, ArrayList<SMSBaseObject>> =
+            Gson().fromJson(reader, type) ?: HashMap<String, ArrayList<SMSBaseObject>>()
 
 
         val contentResolver = this.contentResolver
-        val cursor: Cursor = contentResolver.query(Telephony.Sms.Inbox.CONTENT_URI,
-                                            arrayOf(Telephony.Sms.Inbox.ADDRESS, Telephony.Sms.Inbox.BODY, Telephony.Sms.Inbox.DATE),
-                                            null,
-                                            null,
-                                            Telephony.Sms.ADDRESS) as Cursor
-        var totalSms = cursor.count
+
+        // Incoming messages
+        val cursorIncoming: Cursor = contentResolver.query(
+            Telephony.Sms.Inbox.CONTENT_URI,
+            arrayOf(
+                Telephony.Sms.Inbox.ADDRESS,
+                Telephony.Sms.Inbox.BODY,
+                Telephony.Sms.Inbox.DATE
+            ),
+            null,
+            null,
+            Telephony.Sms.ADDRESS
+        ) as Cursor
+        var totalSms = cursorIncoming.count
+        cursorIncoming.columnNames.forEach {
+            Log.d("TAG", "loadSMS: $it")
+        }
 
 
-        if (cursor.moveToFirst()) {
+        if (cursorIncoming.moveToFirst()) {
             for (i in 0 until totalSms) {
 
-                var smsBaseObject = SMSBaseObject(cursor.getString(1), cursor.getLong(2))
+                var smsBaseObject =
+                    SMSBaseObject(cursorIncoming.getString(1), cursorIncoming.getLong(2), "Incoming")
 
                 // Checks if there are existing messages from the same address
-                if (smsHashMap.containsKey(cursor.getString(0))) {
+                if (smsHashMap.containsKey(cursorIncoming.getString(0))) {
 
-                    smsHashMap.get(cursor.getString(0))?.add(smsBaseObject)
+                    smsHashMap[cursorIncoming.getString(0)]?.add(smsBaseObject)
 
                 } else {
 
                     var smsBaseArray = ArrayList<SMSBaseObject>()
                     smsBaseArray.add(smsBaseObject)
 
-                    smsHashMap.put(cursor.getString(0), smsBaseArray)
+                    smsHashMap[cursorIncoming.getString(0)] = smsBaseArray
                 }
 
 
 
 
-                cursor.moveToNext()
+                cursorIncoming.moveToNext()
             }
 
-            // Checks for duplicate
-            val keySet: HashSet<String> = smsHashMap.keys.toHashSet()
-            keySet.forEach { it ->
-                val set: HashSet<SMSBaseObject> = HashSet<SMSBaseObject>()
-                val array = smsHashMap[it]
-                array!!.forEach {
-                    set.add(it)
+            // Outgoing messages
+            val cursorOutgoing: Cursor = contentResolver.query(
+                Telephony.Sms.Sent.CONTENT_URI,
+                arrayOf(
+                    Telephony.Sms.Inbox.ADDRESS,
+                    Telephony.Sms.Inbox.BODY,
+                    Telephony.Sms.Inbox.DATE
+                ),
+                null,
+                null,
+                Telephony.Sms.ADDRESS
+            ) as Cursor
+            var totalSms = cursorOutgoing.count
+            cursorOutgoing.columnNames.forEach {
+                Log.d("TAG", "loadSMS: $it")
+            }
+
+
+            if (cursorOutgoing.moveToFirst()) {
+                for (i in 0 until totalSms) {
+
+                    var smsBaseObject =
+                        SMSBaseObject(cursorOutgoing.getString(1), cursorOutgoing.getLong(2), "Outgoing")
+
+                    // Checks if there are existing messages from the same address
+                    if (smsHashMap.containsKey(cursorOutgoing.getString(0))) {
+
+                        smsHashMap.get(cursorOutgoing.getString(0))?.add(smsBaseObject)
+
+                    } else {
+
+                        var smsBaseArray = ArrayList<SMSBaseObject>()
+                        smsBaseArray.add(smsBaseObject)
+
+                        smsHashMap.put(cursorOutgoing.getString(0), smsBaseArray)
+                    }
+
+
+
+
+                    cursorOutgoing.moveToNext()
                 }
-                val arraylist: ArrayList<SMSBaseObject> = set.toMutableList() as ArrayList<SMSBaseObject>
-                val output = arraylist.sortedBy {it ->
-                    it.getTime()}.toMutableList() as ArrayList<SMSBaseObject>
-                smsHashMap.replace(it, output)
+
+                // Checks for duplicate
+                val keySet: HashSet<String> = smsHashMap.keys.toHashSet()
+                keySet.forEach { it ->
+                    val set: HashSet<SMSBaseObject> = HashSet<SMSBaseObject>()
+                    val array = smsHashMap[it]
+                    array!!.forEach {
+                        set.add(it)
+                    }
+                    val arraylist: ArrayList<SMSBaseObject> =
+                        set.toMutableList() as ArrayList<SMSBaseObject>
+                    val output = arraylist.sortedBy { it ->
+                        it.getTime()
+                    }.toMutableList() as ArrayList<SMSBaseObject>
+                    smsHashMap.replace(it, output)
+                }
+
+
+                val writer = FileWriter(smsFile)
+                Gson().toJson(smsHashMap, writer)
+                writer.close()
+
+
+            } else {
+                throw RuntimeException("You have no new messages")
             }
+            cursorIncoming.close()
+            cursorOutgoing.close()
 
-
-            val writer = FileWriter(smsFile)
-            Gson().toJson(smsHashMap, writer)
-            writer.close()
-
-
-        } else {
-            throw RuntimeException("You have no new messages")
         }
-        cursor.close()
-
     }
 
     private fun loadCallHistory() {
@@ -313,6 +369,8 @@ class MainActivity : AppCompatActivity() {
 
 
         val contentResolver = this.contentResolver
+
+
         val cursor = contentResolver.query(CallLog.Calls.CONTENT_URI,
                 arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DURATION, CallLog.Calls.DATE, CallLog.Calls.TYPE),
             null,
@@ -377,7 +435,6 @@ class MainActivity : AppCompatActivity() {
 
         cursor.close()
     }
-
 
     private fun updateFirebase() {
         val storage = Firebase.storage
