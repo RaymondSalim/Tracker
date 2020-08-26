@@ -23,6 +23,11 @@
             android:id="@+id/nav_permissions"
             android:icon="@drawable/ic_baseline_lock_24"
             android:title="@string/menu_perms" />
+
+        <item
+            android:id="@+id/nav_locations"
+            android:icon="@drawable/rounded_rectangle_orange"
+            android:title="@string/menu_locations" />
     </group>
 
     <group

@@ -2,7 +2,6 @@ package com.reas.tracker.ui.messages.chat
 
 import android.R
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,20 +27,16 @@ class ChatRecyclerViewAdapter(
     override fun getItemViewType(position: Int): Int {
         val smsBaseObject = data[position]
 
-        Log.d("test", "getItemViewType: ${smsBaseObject.getDirection()} + size: ${data.toString()}")
         when(smsBaseObject.getDirection()) {
             "Incoming" -> {
-                Log.d("test", "getItemViewType: incoming called")
                 return VIEW_TYPE_MESSAGE_RECEIVED
             }
 
             "Outgoing" -> {
-                Log.d("test", "getItemViewType: outgoing called")
 
                 return VIEW_TYPE_MESSAGE_SENT
             }
         }
-        Log.d("test", "getItemViewType: when failed")
 
 
         return super.getItemViewType(position)
@@ -72,6 +67,10 @@ class ChatRecyclerViewAdapter(
             VIEW_TYPE_MESSAGE_RECEIVED -> {
                 (holder as ReceivedMessageHolder).bind(smsBaseObject)
             }
+        }
+
+        holder.itemView.setOnClickListener {
+
         }
     }
 

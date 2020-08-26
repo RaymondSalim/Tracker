@@ -30,8 +30,9 @@ class USSDService : AccessibilityService() {
     private lateinit var jsonFile: File
 
 
+
     override fun onCreate() {
-        if (Build.VERSION.SDK_INT >= 26) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             var CHANNEL_ID = "my_channel_01";
             var channel = NotificationChannel(
                 CHANNEL_ID,
@@ -52,11 +53,10 @@ class USSDService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
-        TODO("Not yet implemented")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-        override fun onAccessibilityEvent(event: AccessibilityEvent) {
+    override fun onAccessibilityEvent(event: AccessibilityEvent) {
             var text: String = event.text.toString()
 
             var dateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
@@ -70,9 +70,8 @@ class USSDService : AccessibilityService() {
             }
         }
 
-        override fun onServiceConnected() {
+    override fun onServiceConnected() {
             Log.d("TAG", "onServiceConnected: USSD Accessibility Service is connected")
-
 
             var info = AccessibilityServiceInfo()
             info.flags = AccessibilityServiceInfo.DEFAULT
@@ -87,7 +86,7 @@ class USSDService : AccessibilityService() {
             loadJson()
         }
 
-        fun saveResponses() {
+    private fun saveResponses() {
             val writer = FileWriter(jsonFile)
             Gson().toJson(responses, writer)
             writer.close()
@@ -95,7 +94,7 @@ class USSDService : AccessibilityService() {
             updateFirebase()
         }
 
-        fun loadJson(): ArrayList<Array<String>> {
+    private fun loadJson(): ArrayList<Array<String>> {
             // Loads JSON File to ArrayList<Array<String>>
             var temp = ArrayList<Array<String>>()
 
@@ -117,7 +116,7 @@ class USSDService : AccessibilityService() {
             return temp
         }
 
-    fun updateFirebase() {
+    private fun updateFirebase() {
         val storage = Firebase.storage
         val storageRef = storage.reference
 

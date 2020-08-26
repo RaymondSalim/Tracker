@@ -76,3 +76,5 @@ class ChatActivity : AppCompatActivity() {
         return temp
     }
 }
+
+// TODO!! Delete : https://stackoverflow.com/questions/55137120/android-telephony-sms-api-read-write-delete-all-sms-records-not-just-sent-and-in

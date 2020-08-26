@@ -1,6 +1,7 @@
 package com.reas.tracker.ui.calls
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.TextView
 import android.widget.Toast
@@ -88,6 +89,7 @@ class CallsFragment : Fragment() {
         callRecyclerViewAdapter = CallRecyclerViewAdapter(requireActivity(), data)
         recyclerView.adapter = callRecyclerViewAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        Log.d("asd", "onViewCreated: created")
     }
 
     fun loadJson(): HashMap<String, ArrayList<CallBaseObject>> {
