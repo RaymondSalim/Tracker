@@ -2,7 +2,7 @@ package com.reas.tracker.service.location
 
 import android.location.Location
 
-class LocationBaseObject(val location: Location) {
+class LocationBaseObject(location: Location) {
     private var mLatitude: Double = location.latitude
     private var mLongitude: Double = location.longitude
     private var mAccuracy: Float = location.accuracy

@@ -44,23 +44,6 @@ class MessagesFragment : Fragment() {
 
         val root = inflater.inflate(R.layout.fragment_messsages, container, false)
 
-//        val viewModel = ViewModelProvider(this).get(MessagesViewModel::class.java)
-//
-//        viewModel.liveData.observe(viewLifecycleOwner, Observer {  })
-
-
-//        model.liveSortedData.observe(
-//            viewLifecycleOwner,
-//            Observer<SortedMap<String, SMSBaseObject>> {
-//                Log.d("TAG", "onCreateView: data changed")
-//                data = it
-//            })
-
-
-
-//        jsonFile = File(requireContext().getExternalFilesDir(null).toString() + "/SMS.json")
-//        data = loadJson()
-
         // Initialize the toolbar
         val toolbar = root.findViewById<Toolbar>(R.id.toolbarMessages)
         toolbar.title = "Messages"

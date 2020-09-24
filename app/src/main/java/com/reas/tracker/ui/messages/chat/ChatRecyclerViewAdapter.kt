@@ -1,6 +1,5 @@
 package com.reas.tracker.ui.messages.chat
 
-import android.R
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +9,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.reas.tracker.service.SMS.SMSBaseObject
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class ChatRecyclerViewAdapter(
@@ -33,7 +31,6 @@ class ChatRecyclerViewAdapter(
             }
 
             "Outgoing" -> {
-
                 return VIEW_TYPE_MESSAGE_SENT
             }
         }

@@ -3,7 +3,6 @@ package com.reas.tracker.ui.calls
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -19,7 +18,7 @@ import com.reas.tracker.service.calls.CallBaseObject
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
-import java.util.HashMap
+import java.util.*
 
 class CallsFragment : Fragment() {
     lateinit var callRecyclerViewAdapter: com.reas.tracker.ui.calls.CallRecyclerViewAdapter

@@ -10,6 +10,8 @@ import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.provider.CallLog
 import android.telephony.TelephonyManager
 import android.util.Log
@@ -174,8 +176,11 @@ import java.util.*
     }
 
     private fun onCallEnd() {
-        loadCallHistory()
-        updateFirebase()
+        Handler(Looper.getMainLooper()).postDelayed({
+            loadCallHistory()
+            updateFirebase()
+        }, 5000)
+
     }
 
     private fun loadCallHistory() {
@@ -238,6 +243,7 @@ import java.util.*
                 val output = arraylist.sortedBy {it ->
                     it.getTime()}.toMutableList() as ArrayList<CallBaseObject>
                 callHashMap.replace(it, output)
+                Log.d("KEYSET", "loadCallHistory: $it")
             }
 
 
@@ -258,9 +264,9 @@ import java.util.*
         val storage = Firebase.storage
         val storageRef = storage.reference
         val auth = FirebaseAuth.getInstance()
-        val deviceID = Build.ID
+        val deviceDevice = Build.DEVICE
 
-        val callJsonRef = storageRef.child("users/${auth.uid}/${deviceID}/Calls.json")
+        val callJsonRef = storageRef.child("users/${auth.uid}/${deviceDevice}/Calls.json")
 
 
         var callFile = Uri.fromFile(File(callDirectory))

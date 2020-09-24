@@ -26,7 +26,7 @@ import java.time.format.DateTimeFormatter
 
 class USSDService : AccessibilityService() {
 
-    var responses: ArrayList<Array<String>> = ArrayList<Array<String>>()
+    var responses: HashMap<String, String> = HashMap()
     private lateinit var jsonFile: File
 
 
@@ -64,8 +64,7 @@ class USSDService : AccessibilityService() {
 
             if (event.className == "android.app.AlertDialog") {
                 responses = loadJson()
-                responses.add(arrayOf(localDateTime, text))
-                Log.d("TAG", "onAccessibilityEvent: ${responses.last()}")
+                responses[localDateTime] = text
                 saveResponses()
             }
         }
@@ -82,8 +81,6 @@ class USSDService : AccessibilityService() {
             serviceInfo = info
 
             jsonFile = File(getExternalFilesDir(null).toString() + "/USSDResponse.json")
-
-            loadJson()
         }
 
     private fun saveResponses() {
@@ -94,9 +91,9 @@ class USSDService : AccessibilityService() {
             updateFirebase()
         }
 
-    private fun loadJson(): ArrayList<Array<String>> {
+    private fun loadJson(): HashMap<String, String> {
             // Loads JSON File to ArrayList<Array<String>>
-            var temp = ArrayList<Array<String>>()
+            var temp = HashMap<String, String>()
 
             val fileReader = FileReader(jsonFile)
             val bufferedReader = BufferedReader(fileReader)
@@ -110,8 +107,8 @@ class USSDService : AccessibilityService() {
             val response = stringBuilder.toString()
 
             if (response != "") {
-                val type = object : TypeToken<ArrayList<Array<String>>>() {}.type
-                temp = Gson().fromJson<ArrayList<Array<String>>>(response, type)
+                val type = object : TypeToken<HashMap<String, String>>() {}.type
+                temp = Gson().fromJson<HashMap<String, String>>(response, type)
             }
             return temp
         }
@@ -120,12 +117,11 @@ class USSDService : AccessibilityService() {
         val storage = Firebase.storage
         val storageRef = storage.reference
 
-        val deviceModel = Build.MODEL
-        val deviceID = Build.ID
+        val deviceDevice = Build.DEVICE
 
         val auth = FirebaseAuth.getInstance()
 
-        val ussdJsonRef = storageRef.child("users/${auth.uid}/$deviceID/USSD.json")
+        val ussdJsonRef = storageRef.child("users/${auth.uid}/$deviceDevice/USSD.json")
 
         var file = Uri.fromFile(jsonFile)
 

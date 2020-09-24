@@ -27,9 +27,7 @@ class SMSRecyclerViewAdapter(
     init {
         val keySet: Set<String> = sortedMap.keys
         listOfKeys = ArrayList<String>(keySet)
-
     }
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         return Holder(layoutInflater.inflate(R.layout.recyclerview_sms, null, false))

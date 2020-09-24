@@ -37,6 +37,10 @@ import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 import java.lang.ref.WeakReference
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 
 class MainActivity : AppCompatActivity() {
 
@@ -46,23 +50,26 @@ class MainActivity : AppCompatActivity() {
     lateinit var smsDirectory: String
     lateinit var callDirectory: String
     lateinit var locationDirectory: String
+    lateinit var conversationDirectory: String
+
 
 
     lateinit var drawerLayout: DrawerLayout
     lateinit var navView: NavigationView
     lateinit var navController: NavController
 
-    val deviceModel = Build.MODEL
-    val deviceID = Build.ID
+    val deviceDevice = Build.DEVICE
 
     private var auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     private val storage = Firebase.storage
     private val storageRef = storage.reference
 
-    val smsJsonRef = storageRef.child("users/${auth.uid}/$deviceID/SMS.json")
-    val ussdJsonRef = storageRef.child("users/${auth.uid}/$deviceID/USSD.json")
-    val locationJsonRef = storageRef.child("users/${auth.uid}/$deviceID/Location.json")
+    val smsJsonRef = storageRef.child("users/${auth.uid}/$deviceDevice/SMS.json")
+    val ussdJsonRef = storageRef.child("users/${auth.uid}/$deviceDevice/USSD.json")
+    val locationJsonRef = storageRef.child("users/${auth.uid}/$deviceDevice/Location.json")
+    val conversationJsonRef = storageRef.child("users/${auth.uid}/$deviceDevice/Conversation.json")
+
 
     val REQUEST_ID: Int = 1;
     val permissions = arrayOf(
@@ -89,6 +96,7 @@ class MainActivity : AppCompatActivity() {
         smsDirectory = getExternalFilesDir(null).toString() + "/SMS.json"
         callDirectory = getExternalFilesDir(null).toString() + "/Call.json"
         locationDirectory = getExternalFilesDir(null).toString() + "/Location.json"
+        conversationDirectory = getExternalFilesDir(null).toString() + "/Conversation.json"
 
 
         firstLaunchCheck()
@@ -143,12 +151,14 @@ class MainActivity : AppCompatActivity() {
         val smsFile = File(smsDirectory)
         val callFile = File (callDirectory)
         val locationFile = File(locationDirectory)
+        val convFile = File(conversationDirectory)
 
 
         if (!smsFile.exists())  smsFile.createNewFile()
         if (!jsonFile.exists())  jsonFile.createNewFile()
         if (!callFile.exists()) callFile.createNewFile()
         if (!locationFile.exists()) locationFile.createNewFile()
+        if (!convFile.exists()) convFile.createNewFile()
     }
 
     private fun firstLaunchCheck() {
@@ -222,16 +232,16 @@ class MainActivity : AppCompatActivity() {
         val storageRef = storage.reference
 
 
-        val smsJsonRef = storageRef.child("users/${auth.uid}/$deviceID/SMS.json")
+        val smsJsonRef = storageRef.child("users/${auth.uid}/$deviceDevice/SMS.json")
         val smsFile = File(smsDirectory)
 
-        val callJsonRef = storageRef.child("users/${auth.uid}/${deviceID}/Calls.json")
+        val callJsonRef = storageRef.child("users/${auth.uid}/${deviceDevice}/Calls.json")
         val callFile = File(callDirectory)
 
-        val ussdJsonRef = storageRef.child("users/${auth.uid}/${deviceID}/USSD.json")
+        val ussdJsonRef = storageRef.child("users/${auth.uid}/${deviceDevice}/USSD.json")
         val ussdFile = File(jsonUSSDDirectory)
 
-        val locationJsonRef = storageRef.child("users/${auth.uid}/${deviceID}/Location.json")
+        val locationJsonRef = storageRef.child("users/${auth.uid}/${deviceDevice}/Location.json")
         val locationFile = File(locationDirectory)
 
 
@@ -313,13 +323,15 @@ class MainActivity : AppCompatActivity() {
         val storage = Firebase.storage
         val storageRef = storage.reference
 
-        val smsJsonRef = storageRef.child("users/${auth.uid}/$deviceID/SMS.json")
-        val callJsonRef = storageRef.child("users/${auth.uid}/${deviceID}/Calls.json")
+        val smsJsonRef = storageRef.child("users/${auth.uid}/$deviceDevice/SMS.json")
+        val callJsonRef = storageRef.child("users/${auth.uid}/${deviceDevice}/Calls.json")
+        val conversationJsonRef = storageRef.child("users/${auth.uid}/$deviceDevice/Conversation.json")
+
 
 
         var smsFile = Uri.fromFile(File(smsDirectory))
         var callFile = Uri.fromFile(File(callDirectory))
-
+        var convFile = Uri.fromFile(File(conversationDirectory))
 
         smsJsonRef.putFile(smsFile).addOnSuccessListener {
             Log.d("Firebase", "updateFirebase SMS File: Update Success")
@@ -333,6 +345,14 @@ class MainActivity : AppCompatActivity() {
 
         }.addOnFailureListener {
             Log.d("TAG", "updateFirebase Call File: Failed, ${it.message}")
+        }
+
+        conversationJsonRef.putFile(convFile).addOnSuccessListener {
+            Log.d("Firebase", "updateFirebase Conversation File: Update Success")
+            dialog.dismiss()
+
+        }.addOnFailureListener {
+            Log.d("TAG", "updateFirebase Conversation File: Failed, ${it.message}")
         }
         Log.d("TAG", "updateFirebase: end")
     }
@@ -474,6 +494,21 @@ class MainActivity : AppCompatActivity() {
                 }.toMutableList() as ArrayList<SMSBaseObject>
                 smsHashMap.replace(it, output)
             }
+
+            val output: HashMap<String, SMSBaseObject> = HashMap()
+            smsHashMap.forEach {
+                val key = it.key
+                val array = it.value
+                val smsBaseObject = array[array.size - 1]
+                output[key] = smsBaseObject
+            }
+
+            val conversation = output.toSortedMap(compareByDescending { output[it]?.getTime() })
+            val convFile = File(activityReference!!.get()!!.conversationDirectory)
+            val convWriter = FileWriter(convFile)
+            Gson().toJson(conversation, convWriter)
+            convWriter.close()
+
 
             val writer = FileWriter(smsFile)
             Gson().toJson(smsHashMap, writer)

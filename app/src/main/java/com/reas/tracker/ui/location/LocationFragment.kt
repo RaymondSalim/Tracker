@@ -2,6 +2,7 @@ package com.reas.tracker.ui.location
 
 import android.content.Intent
 import android.location.Location
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -41,19 +42,25 @@ class LocationFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val root = inflater.inflate(R.layout.fragment_location, container, false)
-        textView2 = root.findViewById(R.id.textView2)
+//        textView2 = root.findViewById(R.id.textView2)
         return root
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        test.text = "${Build.DISPLAY} \n ${Build.DEVICE} \n ${Build.BOARD} \n ${Build.BOOTLOADER} \n ${Build.BRAND} \n ${Build.FINGERPRINT} \n ${Build.HARDWARE} \n ${Build.HOST} \n ${Build.ID} \n ${Build.MANUFACTURER} \n ${Build.MODEL} \n ${Build.PRODUCT} \n ${Build.TAGS} \n  ${Build.TIME} \n ${Build.TYPE} \n ${Build.UNKNOWN} \n ${Build.USER} \n"
 
 
         button2.setOnClickListener {
             val locationService = Intent(context, LocationService::class.java)
             locationService.addFlags(Intent.FLAG_FROM_BACKGROUND)
-//            requireContext().startForegroundService(locationService)
-            requireContext().startService(locationService)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                requireContext().startForegroundService(locationService)
+            } else {
+                requireContext().startService(locationService)
+            }
         }
 
 

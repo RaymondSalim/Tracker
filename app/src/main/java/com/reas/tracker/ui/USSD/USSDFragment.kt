@@ -13,13 +13,13 @@ import com.google.gson.reflect.TypeToken
 import com.reas.tracker.MainActivity
 import com.reas.tracker.R
 import java.io.BufferedReader
-import java.io.FileReader
 import java.io.File
+import java.io.FileReader
 
 class USSDFragment : Fragment() {
     lateinit var USSDRecyclerViewAdapter: USSDRecyclerViewAdapter
     lateinit var recyclerView: RecyclerView
-    lateinit var data: ArrayList<Array<String>>
+    lateinit var data: HashMap<String, String>
     lateinit var jsonFile: File
 
     override fun onCreateView(
@@ -71,7 +71,7 @@ class USSDFragment : Fragment() {
             R.id.reloadUSSD -> {
                 // Updates the data with the newest file
                 data.clear()
-                data.addAll(loadJson())
+//                data.addAll(loadJson())
                 updateAdapter()
                 return true
             }
@@ -87,8 +87,8 @@ class USSDFragment : Fragment() {
         }
     }
 
-    fun loadJson(): ArrayList<Array<String>> {
-        var temp = ArrayList<Array<String>>()
+    fun loadJson(): HashMap<String, String> {
+        var temp = HashMap<String, String>()
 
         // Loads JSON File to ArrayList<Array<String>>
         val fileReader = FileReader(jsonFile)
@@ -103,8 +103,8 @@ class USSDFragment : Fragment() {
         val response = stringBuilder.toString()
 
         if (response != "") {
-            val type = object : TypeToken<ArrayList<Array<String>>>() {}.type
-            temp = Gson().fromJson<ArrayList<Array<String>>>(response, type)
+            val type = object : TypeToken<HashMap<String, String>>() {}.type
+            temp = Gson().fromJson<HashMap<String, String>>(response, type)
         }
         return temp
     }

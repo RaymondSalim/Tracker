@@ -9,16 +9,13 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.reas.tracker.R
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import kotlin.collections.ArrayList
 
 class USSDRecyclerViewAdapter(
     private val context: Context,
-    private val list:ArrayList<Array<String>>
+    private val list:HashMap<String, String>
 ) : RecyclerView.Adapter<USSDRecyclerViewAdapter.Holder>() {
     lateinit var layoutInflater: LayoutInflater
-    lateinit var data: ArrayList<Array<String>>
+    lateinit var data: HashMap<String, String>
 
     init {
         layoutInflater = LayoutInflater.from(context)
@@ -34,23 +31,23 @@ class USSDRecyclerViewAdapter(
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onBindViewHolder(holder: USSDRecyclerViewAdapter.Holder, position: Int) {
-        var mCurrent = data.get(position)
-        holder.summaryUSSD.text = mCurrent[1]
-        var date = mCurrent[0]
-        var time: String = ""
-
-        if (mCurrent.isNotEmpty()) {
-            var ldt: LocalDateTime = LocalDateTime.parse(date)
-            var dateFormatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy")
-            date = dateFormatter.format(ldt)
-
-            var timeFormatter = DateTimeFormatter.ofPattern("HH:m:s")
-            time = timeFormatter.format(ldt)
-        }
-
-        holder.date.text = date
-        holder.time.text = time
-
+//        var mCurrent = data.get(position)
+//        holder.summaryUSSD.text = mCurrent[1]
+//        var date = mCurrent[0]
+//        var time: String = ""
+//
+//        if (mCurrent.isNotEmpty()) {
+//            var ldt: LocalDateTime = LocalDateTime.parse(date)
+//            var dateFormatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy")
+//            date = dateFormatter.format(ldt)
+//
+//            var timeFormatter = DateTimeFormatter.ofPattern("HH:m:s")
+//            time = timeFormatter.format(ldt)
+//        }
+//
+//        holder.date.text = date
+//        holder.time.text = time
+//
     }
 
 

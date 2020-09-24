@@ -17,21 +17,29 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
-import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
 
 
 class SMSBroadcastReceiver: BroadcastReceiver() {
     var smsMessages = HashMap<String, ArrayList<SMSBaseObject>>()
+
+    // conversation only shows the number and the last message
+    var conversation: SortedMap<String, SMSBaseObject>? = null
     lateinit var jsonFile: File
+    lateinit var sortedFile: File
 
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onReceive(context: Context, intent: Intent) {
         val smsDirectory = context.getExternalFilesDir(null).toString() + "/SMS.json"
+        val conversationDirectory = context.getExternalFilesDir(null).toString() + "/Conversation.json"
 
         jsonFile = File(smsDirectory)
+        sortedFile = File(conversationDirectory)
+
+        if (!sortedFile.exists()) sortedFile.createNewFile()
+
 
         smsMessages = loadJson()
 
@@ -68,6 +76,7 @@ class SMSBroadcastReceiver: BroadcastReceiver() {
                             smsMessages.put(msgFrom, smsBaseArray)
                         }
 
+                        conversation = sortHashMap(smsMessages)
 
                         saveResponses()
 
@@ -103,10 +112,14 @@ class SMSBroadcastReceiver: BroadcastReceiver() {
         return temp
     }
 
-    fun saveResponses() {
-        val writer = FileWriter(jsonFile)
-        Gson().toJson(smsMessages, writer)
-        writer.close()
+    private fun saveResponses() {
+        val smsWriter = FileWriter(jsonFile)
+        Gson().toJson(smsMessages, smsWriter)
+        smsWriter.close()
+
+        val conversationWriter = FileWriter(sortedFile)
+        Gson().toJson(conversation, conversationWriter)
+        conversationWriter.close()
 
         updateFirebase()
     }
@@ -115,18 +128,39 @@ class SMSBroadcastReceiver: BroadcastReceiver() {
         val storage = Firebase.storage
         val storageRef = storage.reference
 
-        val deviceModel = Build.MODEL
-        val deviceID = Build.ID
+        val deviceDevice = Build.DEVICE
         val auth = FirebaseAuth.getInstance()
 
-        val smsJsonRef = storageRef.child("users/${auth.uid}/$deviceID/SMS.json")
+        val smsJsonRef = storageRef.child("users/${auth.uid}/$deviceDevice/SMS.json")
+        val conversationJsonRef = storageRef.child("users/${auth.uid}/$deviceDevice/Conversation.json")
 
-        var file = Uri.fromFile(jsonFile)
+        var smsFile = Uri.fromFile(jsonFile)
+        var convFile = Uri.fromFile(sortedFile)
 
-        val uploadTask = smsJsonRef.putFile(file)
-        uploadTask.addOnFailureListener {
-            smsJsonRef.putFile(file)
+        smsJsonRef.putFile(smsFile).addOnSuccessListener {
+            Log.d("Firebase", "updateFirebase: SMS File uploaded")
+        }.addOnFailureListener {
+            smsJsonRef.putFile(smsFile)
         }
+
+        conversationJsonRef.putFile(convFile).addOnSuccessListener {
+            Log.d("Firebase", "updateFirebase: Conversation File uploaded")
+        }.addOnFailureListener{
+            conversationJsonRef.putFile(convFile)
+        }
+
+    }
+
+    private fun sortHashMap(hashMap: HashMap<String, java.util.ArrayList<SMSBaseObject>>): SortedMap<String, SMSBaseObject> {
+        val output: HashMap<String, SMSBaseObject> = HashMap<String, SMSBaseObject>()
+        hashMap.forEach {
+            val key = it.key
+            val array = it.value
+            val smsBaseObject = array[array.size - 1]
+            output[key] = smsBaseObject
+        }
+
+        return output.toSortedMap(compareByDescending { output[it]?.getTime() })
     }
 
     }

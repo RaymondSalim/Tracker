@@ -28,17 +28,22 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
+import java.util.*
 
+private const val TAG = "LocationService"
 
 class LocationService: Service() {
     private var mFusedLocationClient: FusedLocationProviderClient? = null
     private var mLocationCallback: LocationCallback? = null
     private var mLocationRequest: LocationRequest? = null
     private var mLocation: Location? = null
-    private var jsonFile: File? = null
+    private var locationFile: File? = null
     private var locationDirectory: String? = null
-    private var locationArray: ArrayList<LocationBaseObject> = ArrayList<LocationBaseObject>()
+    private var locationArray: ArrayList<LocationBaseObject> = ArrayList()
 
+    private var mInterval = 120000L
+
+//    private var ref: DatabaseReference? = null
 
 
     override fun onCreate() {
@@ -56,6 +61,7 @@ class LocationService: Service() {
             }
         }
 
+        getInterval()
         createLocationRequest()
         getLastLocation()
 
@@ -64,10 +70,25 @@ class LocationService: Service() {
 
     private fun onNewLocation(lL: Location) {
         var location = LocationBaseObject(lL)
-        jsonFile = File(locationDirectory)
+        locationFile = File(locationDirectory)
         locationArray = loadJson()
+
+//        // Gets the milliseconds time of the date
+//        val currentDate = (Date().time - (Date().time % 86400000L))
+//
+//        if (locationMap[currentDate] != null) {
+//            val array = locationMap[currentDate]!!
+//            array.add(location)
+//            locationMap[currentDate] = array
+//
+//        } else {
+//            val array = ArrayList<LocationBaseObject>()
+//            array.add(location)
+//            locationMap[currentDate] = array
+//        }
+
         locationArray.add(location)
-        Log.d("TAG", "onNewLocation: $locationArray")
+
         saveResponses()
     }
 
@@ -77,7 +98,7 @@ class LocationService: Service() {
 
     private fun createLocationRequest() {
         mLocationRequest = LocationRequest()
-        mLocationRequest!!.interval = 1200000
+        mLocationRequest!!.interval = mInterval
         mLocationRequest!!.fastestInterval = mLocationRequest!!.interval / 2
         mLocationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
@@ -98,30 +119,51 @@ class LocationService: Service() {
 //                    Log.w("TAG", "getLastLocation: Failed")
 //                }
 //            }
-            mFusedLocationClient!!.requestLocationUpdates(mLocationRequest, object : LocationCallback() {
-                override fun onLocationResult(locationResult: LocationResult) {
-                    val location = locationResult.lastLocation
-                    if (location != null) {
-                        Log.d("TAG", "location update $location")
-                        val ref = FirebaseDatabase.getInstance().getReference("users/${FirebaseAuth.getInstance().uid}/${Build.DEVICE}")
-                        ref.addValueEventListener(object: ValueEventListener {
-                            override fun onCancelled(error: DatabaseError) {
-                                Log.d("Firebase Database", "onCancelled: Database not updated $error")
-                            }
-
-                            override fun onDataChange(snapshot: DataSnapshot) {
-                                Log.d("Firebase Database", "onDataChange: Database updated")
-                            }
-
-                        })
-                        ref.setValue(location)
-                        onNewLocation(location)
-
-                    }
-                }
-            }, null)
+            mFusedLocationClient!!.requestLocationUpdates(mLocationRequest, callback, null)
         }
 
+    }
+
+    private val callback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            val location = locationResult.lastLocation
+            if (location != null) {
+                Log.d("TAG", "location update $location")
+                val ref = FirebaseDatabase.getInstance().getReference("users/${FirebaseAuth.getInstance().uid}/location/${Build.DEVICE}")
+//                ref.addValueEventListener(object: ValueEventListener {
+//                    override fun onCancelled(error: DatabaseError) {
+//                        Log.d("Firebase Database", "onCancelled: Database not updated $error")
+//                    }
+//
+//                    override fun onDataChange(snapshot: DataSnapshot) {
+//                        Log.d("Firebase Database", "onDataChange: Database updated")
+//                    }
+//
+//                })
+                ref.setValue(location)
+                onNewLocation(location)
+
+            }
+        }
+    }
+
+    private fun getInterval() {
+        val ref = FirebaseDatabase.getInstance().getReference("users/${FirebaseAuth.getInstance().uid}/settings/${Build.DEVICE}/location")
+        ref.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                mInterval = snapshot.getValue(Long::class.java)!!
+                Log.d(TAG, "onDataChange: Interval: $mInterval")
+                mFusedLocationClient?.removeLocationUpdates(mLocationCallback)
+
+                createLocationRequest()
+                getLastLocation()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
     }
 
     private fun buildNotification() {
@@ -156,10 +198,10 @@ class LocationService: Service() {
     }
 
     private fun loadJson(): ArrayList<LocationBaseObject> {
-        // Loads JSON File to ArrayList<SMSObject>
+        // Loads JSON File to ArrayList<LocationBaseObject>
         var temp = ArrayList<LocationBaseObject>()
 
-        val fileReader = FileReader(jsonFile)
+        val fileReader = FileReader(locationFile)
         val bufferedReader = BufferedReader(fileReader)
         val stringBuilder = StringBuilder()
         var line = bufferedReader.readLine()
@@ -172,13 +214,13 @@ class LocationService: Service() {
 
         if (response != "") {
             val type = object : TypeToken<ArrayList<LocationBaseObject>>() {}.type
-            temp = Gson().fromJson<ArrayList<LocationBaseObject>>(response, type)
+            temp = Gson().fromJson(response, type)
         }
         return temp
     }
 
     private fun saveResponses() {
-        val writer = FileWriter(jsonFile)
+        val writer = FileWriter(locationFile)
         Gson().toJson(locationArray, writer)
         writer.close()
 
@@ -189,16 +231,19 @@ class LocationService: Service() {
         val storage = Firebase.storage
         val storageRef = storage.reference
 
-        val deviceModel = Build.MODEL
-        val deviceID = Build.ID
+        val deviceDevice = Build.DEVICE
         val auth = FirebaseAuth.getInstance()
 
-        val locationJsonRef = storageRef.child("users/${auth.uid}/$deviceID/Location.json")
+        val locationJsonRef = storageRef.child("users/${auth.uid}/$deviceDevice/Location.json")
 
-        var file = Uri.fromFile(jsonFile)
+        var file = Uri.fromFile(locationFile)
 
         val uploadTask = locationJsonRef.putFile(file)
-        uploadTask.addOnFailureListener {
+        uploadTask.
+        addOnCompleteListener{
+            Log.d("LocationService", "updateFirebase: complete")
+        }.addOnFailureListener {
+            Log.d("LocationService", "updateFirebase: Failed")
             locationJsonRef.putFile(file)
         }
     }

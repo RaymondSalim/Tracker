@@ -1,17 +1,14 @@
 package com.reas.tracker
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.activity_login.*
-import kotlinx.android.synthetic.main.nav_header_main.*
-import kotlin.jvm.java as java
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
@@ -65,6 +62,18 @@ class LoginActivity : AppCompatActivity() {
     fun loginSuccess() {
         val mainActivity = Intent(this, MainActivity::class.java)
         startActivity(mainActivity)
+
+        val deviceInfo = HashMap<String, String>()
+        deviceInfo["device"] = Build.DEVICE
+        deviceInfo["manufacturer"] = Build.MANUFACTURER
+        deviceInfo["model"] = Build.MODEL
+        deviceInfo["fingerprint"] = Build.FINGERPRINT
+
+        val ref = FirebaseDatabase.getInstance().getReference("users/${FirebaseAuth.getInstance().uid}/devices/${Build.DEVICE}")
+        ref.setValue(deviceInfo).addOnSuccessListener {
+            Log.d("LoginActivity", "Device Info Updated")
+            Log.d("EEEE", "loginSuccess: ${deviceInfo}")
+        }
 
         finish()
     }
