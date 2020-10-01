@@ -26,7 +26,7 @@ import java.io.FileReader
 import java.io.FileWriter
 import java.util.*
 
- class PhonecallReceiver : BroadcastReceiver() {
+ class PhoneCallReceiver : BroadcastReceiver() {
     companion object {
         private var lastState: Int = -1
         private var callStartTime: Date? = null

@@ -1,6 +1,7 @@
 package com.reas.tracker
 
 import android.Manifest
+import android.app.ActivityManager
 import android.app.role.RoleManager
 import android.content.Context
 import android.content.Intent
@@ -13,18 +14,11 @@ import android.provider.CallLog
 import android.provider.Telephony
 import android.util.Log
 import android.view.Menu
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.navigation.NavController
-import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupWithNavController
-import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
@@ -32,15 +26,13 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import com.reas.tracker.service.SMS.SMSBaseObject
+import com.reas.tracker.service.USSD.USSDService
 import com.reas.tracker.service.calls.CallBaseObject
+import com.reas.tracker.service.location.LocationService
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 import java.lang.ref.WeakReference
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
-import kotlin.collections.HashSet
 
 class MainActivity : AppCompatActivity() {
 
@@ -53,11 +45,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var conversationDirectory: String
 
 
-
-    lateinit var drawerLayout: DrawerLayout
-    lateinit var navView: NavigationView
-    lateinit var navController: NavController
-
     val deviceDevice = Build.DEVICE
 
     private var auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -65,13 +52,7 @@ class MainActivity : AppCompatActivity() {
     private val storage = Firebase.storage
     private val storageRef = storage.reference
 
-    val smsJsonRef = storageRef.child("users/${auth.uid}/$deviceDevice/SMS.json")
-    val ussdJsonRef = storageRef.child("users/${auth.uid}/$deviceDevice/USSD.json")
-    val locationJsonRef = storageRef.child("users/${auth.uid}/$deviceDevice/Location.json")
-    val conversationJsonRef = storageRef.child("users/${auth.uid}/$deviceDevice/Conversation.json")
-
-
-    val REQUEST_ID: Int = 1;
+    private val REQUEST_ID: Int = 1
     val permissions = arrayOf(
         Manifest.permission.READ_PHONE_STATE,
         Manifest.permission.ACCESS_BACKGROUND_LOCATION,
@@ -83,6 +64,7 @@ class MainActivity : AppCompatActivity() {
         Manifest.permission.FOREGROUND_SERVICE,
         Manifest.permission.MANAGE_OWN_CALLS
     )
+    private val drawOverApp = arrayOf(Manifest.permission.SYSTEM_ALERT_WINDOW)
 
     private val dialog = LoadingDialogFragment()
 
@@ -101,40 +83,17 @@ class MainActivity : AppCompatActivity() {
 
         firstLaunchCheck()
 
-        drawerLayout = findViewById(R.id.drawer_layout)
-        navView= findViewById(R.id.nav_view)
-        navController = findNavController(R.id.nav_host_fragment)
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.nav_responses, R.id.nav_messages, R.id.nav_calls, R.id.nav_permissions, R.id.nav_settings, R.id.nav_locations
-            ), drawerLayout
-        )
-        // setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
+        val permissionsFragment = PermissionsFragment()
+        supportFragmentManager.beginTransaction().add(R.id.content_main, permissionsFragment, "permissionsFragment").commit()
 
 
-
-        val userEmail = navView.getHeaderView(0).findViewById<TextView>(R.id.userEmail)
-        val userName = navView.getHeaderView(0).findViewById<TextView>(R.id.userName)
-
-
-        userEmail.text = auth.currentUser!!.email
-        userName.text = auth.currentUser!!.displayName ?: ""
-
-
+        starServices()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment)
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -149,7 +108,7 @@ class MainActivity : AppCompatActivity() {
     private fun checkFiles() {
         val jsonFile = File(jsonUSSDDirectory)
         val smsFile = File(smsDirectory)
-        val callFile = File (callDirectory)
+        val callFile = File(callDirectory)
         val locationFile = File(locationDirectory)
         val convFile = File(conversationDirectory)
 
@@ -190,6 +149,7 @@ class MainActivity : AppCompatActivity() {
 
     fun requestPerms(permissions: Array<String>) {
         ActivityCompat.requestPermissions(this@MainActivity, permissions, 1)
+        ActivityCompat.requestPermissions(this@MainActivity, drawOverApp, 0)
     }
 
     override fun onRequestPermissionsResult(
@@ -367,6 +327,41 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun starServices() {
+        val locationService = Intent(applicationContext, LocationService::class.java)
+        locationService.addFlags(Intent.FLAG_FROM_BACKGROUND)
+
+        val ussdService = Intent(applicationContext, USSDService::class.java)
+        ussdService.addFlags(Intent.FLAG_FROM_BACKGROUND)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!(isMyServiceRunning(LocationService::class.java))) {
+                applicationContext.startForegroundService(locationService)
+            }
+            if (!(isMyServiceRunning(USSDService::class.java))) {
+                applicationContext.startForegroundService(ussdService)
+            }
+
+        } else {
+            if (!(isMyServiceRunning(LocationService::class.java))) {
+                applicationContext.startService(locationService)
+            }
+            if (!(isMyServiceRunning(USSDService::class.java))) {
+                applicationContext.startService(ussdService)
+            }
+        }
+    }
+
+    //TODO! Find replacement
+    private fun isMyServiceRunning(serviceClass: Class<*>): Boolean {
+        val manager: ActivityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+        for (service in manager.getRunningServices(Int.MAX_VALUE)) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
+    }
 
     private class LoadSMS(context: MainActivity): AsyncTask<Void, Void, Int>() {
         var activityReference: WeakReference<MainActivity>? = null
@@ -524,7 +519,7 @@ class MainActivity : AppCompatActivity() {
             val activity = activityReference!!.get()
             Log.d("TAG", "onPostExecutesms: ${activity!!.fileLoaded}")
 
-            if ((activity == null) or activity!!.isFinishing) return
+            if ((activity == null) or activity.isFinishing) return
             if (activity.fileLoaded < 1) {
                 activity.fileLoaded++
             } else activity.updateFirebase()
@@ -549,11 +544,13 @@ class MainActivity : AppCompatActivity() {
             val contentResolver = (activityReference!!.get()!!).contentResolver
 
 
-            val cursor = contentResolver.query(CallLog.Calls.CONTENT_URI,
+            val cursor = contentResolver.query(
+                CallLog.Calls.CONTENT_URI,
                 arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DURATION, CallLog.Calls.DATE, CallLog.Calls.TYPE),
                 null,
                 null,
-                CallLog.Calls.DEFAULT_SORT_ORDER) as Cursor
+                CallLog.Calls.DEFAULT_SORT_ORDER
+            ) as Cursor
 
             val totalCall = cursor.count
 
@@ -565,9 +562,15 @@ class MainActivity : AppCompatActivity() {
                     var direction: String = "Unknown"
 
                     when (cursor.getInt(3)) {
-                        CallLog.Calls.INCOMING_TYPE -> {direction = "Incoming"}
-                        CallLog.Calls.OUTGOING_TYPE -> {direction = "Outgoing"}
-                        CallLog.Calls.MISSED_TYPE -> {direction = "Missed"}
+                        CallLog.Calls.INCOMING_TYPE -> {
+                            direction = "Incoming"
+                        }
+                        CallLog.Calls.OUTGOING_TYPE -> {
+                            direction = "Outgoing"
+                        }
+                        CallLog.Calls.MISSED_TYPE -> {
+                            direction = "Missed"
+                        }
                     }
 
                     val callBaseObject = CallBaseObject(duration, date, direction)
@@ -597,7 +600,7 @@ class MainActivity : AppCompatActivity() {
                         set.add(it)
                     }
                     val arraylist: ArrayList<CallBaseObject> = set.toMutableList() as ArrayList<CallBaseObject>
-                    val output = arraylist.sortedBy {it ->
+                    val output = arraylist.sortedBy { it ->
                         it.getTime()}.toMutableList() as ArrayList<CallBaseObject>
                     callHashMap.replace(it, output)
                 }
@@ -622,13 +625,12 @@ class MainActivity : AppCompatActivity() {
             val activity = activityReference!!.get()
             Log.d("TAG", "onPostExecutecall: ${activity!!.fileLoaded}")
 
-            if ((activity == null) or activity!!.isFinishing) return
+            if ((activity == null) or activity.isFinishing) return
             if (activity.fileLoaded < 1) {
                 activity.fileLoaded++
             } else activity.updateFirebase()
         }
     }
-
 }
 
 

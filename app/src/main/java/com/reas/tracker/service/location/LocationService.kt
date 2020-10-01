@@ -98,9 +98,11 @@ class LocationService: Service() {
 
     private fun createLocationRequest() {
         mLocationRequest = LocationRequest()
+        mLocationRequest!!.smallestDisplacement = 10F
         mLocationRequest!!.interval = mInterval
         mLocationRequest!!.fastestInterval = mLocationRequest!!.interval / 2
         mLocationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+
     }
 
     private fun getLastLocation() {
@@ -168,22 +170,22 @@ class LocationService: Service() {
 
     private fun buildNotification() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            var CHANNEL_ID = "my_channel_01";
+            var CHANNEL_ID = "my_channel_01"
             var channel = NotificationChannel(
                 CHANNEL_ID,
                 "Channel human readable title",
                 NotificationManager.IMPORTANCE_MIN
-            );
+            )
 
             (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(
                 channel
-            );
+            )
 
             var notification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("")
-                .setContentText("").build();
+                .setContentText("").build()
 
-            startForeground(1, notification);
+            startForeground(1, notification)
         }
     }
 

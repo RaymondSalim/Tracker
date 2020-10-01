@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.text.TextUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,15 +17,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.navigation.ui.setupActionBarWithNavController
 import com.reas.tracker.service.USSD.USSDService
 import kotlinx.android.synthetic.main.fragment_permissions.view.*
 
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 val permissions = arrayOf(
     Manifest.permission.READ_PHONE_STATE,
     Manifest.permission.ACCESS_BACKGROUND_LOCATION,
@@ -34,22 +30,11 @@ val permissions = arrayOf(
     Manifest.permission.READ_CALL_LOG,
     Manifest.permission.RECEIVE_BOOT_COMPLETED,
     Manifest.permission.FOREGROUND_SERVICE,
-    Manifest.permission.MANAGE_OWN_CALLS
+    Manifest.permission.MANAGE_OWN_CALLS,
+    Manifest.permission.SYSTEM_ALERT_WINDOW
 )
 
-/**
- * A simple [Fragment] subclass.
- * Use the [PermissionsFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class PermissionsFragment : Fragment() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -60,17 +45,17 @@ class PermissionsFragment : Fragment() {
         var view = inflater.inflate(R.layout.fragment_permissions, container, false)
 
 
-        with (view) {
+        with(view) {
             // Updates the checklist drawable for current permission settings
             checkPerms(this)
 
             requestPermissions.setOnClickListener {
-                (context as MainActivity).requestPerms(permissions)
+                (context as MainActivity).requestPerms(context.permissions)
                 checkPerms(view)
             }
 
             openSettings.setOnClickListener {
-                val i = with (Intent()) {
+                val i = with(Intent()) {
                     action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
                     addCategory(Intent.CATEGORY_DEFAULT)
                     data = Uri.parse("package:" + context.packageName)
@@ -83,7 +68,7 @@ class PermissionsFragment : Fragment() {
 
             requestRoles.setOnClickListener { (context as MainActivity).requestRole() }
             openAccessibility.setOnClickListener {
-                val i = with (Intent()) {
+                val i = with(Intent()) {
                     action = Settings.ACTION_ACCESSIBILITY_SETTINGS
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
@@ -100,9 +85,10 @@ class PermissionsFragment : Fragment() {
             permission7.text = permissions[6]
             permission8.text = permissions[7]
             permission9.text = permissions[8]
+            permission10.text = permissions[9]
 
-            if (isAccessibilityServiceEnabled(requireContext(), USSDService::class.java )) {
-                permission10.setCheckMarkDrawable(R.drawable.ic_baseline_check_24)
+            if (isAccessibilityServiceEnabled(requireContext(), USSDService::class.java)) {
+                permission11.setCheckMarkDrawable(R.drawable.ic_baseline_check_24)
             }
 
         }
@@ -113,25 +99,21 @@ class PermissionsFragment : Fragment() {
         setHasOptionsMenu(true)
 
         // Adds the navigationview button (three lines)
-        with (context as AppCompatActivity) {
+        with(context as AppCompatActivity) {
             setSupportActionBar(toolbar)
-            setupActionBarWithNavController(
-                (requireContext() as MainActivity).navController,
-                (requireContext() as MainActivity).appBarConfiguration
-            )
         }
 
         return view
     }
 
-    fun checkPerms(view: View) {
-        with (view) {
+    private fun checkPerms(view: View) {
+        with(view) {
             if (ContextCompat.checkSelfPermission(
                     requireContext(),
                     permissions[0]
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
-                view.permission1.setCheckMarkDrawable(R.drawable.ic_baseline_check_24)
+                permission1.setCheckMarkDrawable(R.drawable.ic_baseline_check_24)
             }
 
             if (ContextCompat.checkSelfPermission(
@@ -197,17 +179,29 @@ class PermissionsFragment : Fragment() {
             ) {
                 permission9.setCheckMarkDrawable(R.drawable.ic_baseline_check_24)
             }
+
+            if (!Settings.canDrawOverlays(context)) {
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:" + context.packageName)
+                )
+                startActivityForResult(intent, 0)
+            } else {
+                permission10.setCheckMarkDrawable(R.drawable.ic_baseline_check_24)
+            }
+
+            Log.d("Check", "checkPerms: ${ContextCompat.checkSelfPermission(requireContext(), permissions[9])}")
         }
     }
 
 
-    fun isAccessibilityServiceEnabled(
+    private fun isAccessibilityServiceEnabled(
         context: Context,
         accessibilityService: Class<*>?
     ): Boolean {
         val expectedComponentName = ComponentName(context, accessibilityService!!)
         val enabledServicesSetting: String = Settings.Secure.getString(
-            context.getContentResolver(),
+            context.contentResolver,
             Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         )
             ?: return false

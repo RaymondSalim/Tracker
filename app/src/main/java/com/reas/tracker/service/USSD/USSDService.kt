@@ -33,22 +33,22 @@ class USSDService : AccessibilityService() {
 
     override fun onCreate() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            var CHANNEL_ID = "my_channel_01";
+            var CHANNEL_ID = "my_channel_01"
             var channel = NotificationChannel(
                 CHANNEL_ID,
                 "Channel human readable title",
                 NotificationManager.IMPORTANCE_MIN
-            );
+            )
 
             (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(
                 channel
-            );
+            )
 
             var notification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("")
-                .setContentText("").build();
+                .setContentText("").build()
 
-            startForeground(1, notification);
+            startForeground(1, notification)
         }
     }
 

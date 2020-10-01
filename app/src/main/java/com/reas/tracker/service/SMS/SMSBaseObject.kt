@@ -31,6 +31,6 @@ class SMSBaseObject(message: String, time: Long, direction: String) {
     }
 
     override fun equals(other: Any?): Boolean {
-        return !super.equals(other);
+        return !super.equals(other)
     }
 }

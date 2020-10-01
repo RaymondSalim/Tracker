@@ -14,6 +14,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
     <application
         android:allowBackup="true"
@@ -25,8 +26,7 @@
         <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
@@ -35,13 +35,6 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
-        <activity
-            android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings" />
-
-        <activity
-            android:name="com.reas.tracker.ui.messages.chat.ChatActivity" />
 
         <service
             android:name=".OutgoingCallHandler"
@@ -58,7 +51,7 @@
             android:exported="true">
         </service>
 
-        <receiver android:name="com.reas.tracker.service.calls.PhonecallReceiver" >
+        <receiver android:name="com.reas.tracker.service.calls.PhoneCallReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.PHONE_STATE" />
             </intent-filter>
