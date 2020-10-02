@@ -1,7 +1,7 @@
 
 // https://stackoverflow.com/a/15564021/12201419
 
-package com.reas.tracker.service.calls
+package com.reas.settings.service.calls
 
 import android.content.BroadcastReceiver
 import android.content.ContentResolver
@@ -253,7 +253,7 @@ import java.util.*
 
 
         } else {
-            throw RuntimeException("You have no new calls")
+            Log.d("MainActivity", "doInBackground: No new calls")
         }
 
         cursor.close()

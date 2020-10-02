@@ -1,4 +1,4 @@
-package com.reas.tracker
+package com.reas.settings
 
 import android.content.Intent
 import android.os.Build
@@ -37,6 +37,8 @@ class LoginActivity : AppCompatActivity() {
                         Toast.makeText(this, "Registration Failed", Toast.LENGTH_SHORT).show()
                     }
                     registerButton.isEnabled = true
+                }.addOnFailureListener {
+                    Log.e("LoginActivity", "onCreate: ", it )
                 }
         }
 

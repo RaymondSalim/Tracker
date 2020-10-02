@@ -1,4 +1,4 @@
-package com.reas.tracker
+package com.reas.settings
 
 import android.app.Dialog
 import android.os.Bundle

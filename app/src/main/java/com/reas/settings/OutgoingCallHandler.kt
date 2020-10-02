@@ -1,4 +1,4 @@
-package com.reas.tracker
+package com.reas.settings
 
 import android.content.Intent
 import android.net.Uri

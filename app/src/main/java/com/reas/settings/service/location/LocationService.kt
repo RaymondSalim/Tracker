@@ -1,4 +1,4 @@
-package com.reas.tracker.service.location
+package com.reas.settings.service.location
 
 import android.Manifest
 import android.app.NotificationChannel
@@ -153,7 +153,7 @@ class LocationService: Service() {
         val ref = FirebaseDatabase.getInstance().getReference("users/${FirebaseAuth.getInstance().uid}/settings/${Build.DEVICE}/location")
         ref.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                mInterval = snapshot.getValue(Long::class.java)!!
+                mInterval = snapshot.getValue(Long::class.java) ?: 120000L
                 Log.d(TAG, "onDataChange: Interval: $mInterval")
                 mFusedLocationClient?.removeLocationUpdates(mLocationCallback)
 
@@ -162,7 +162,6 @@ class LocationService: Service() {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
             }
 
         })

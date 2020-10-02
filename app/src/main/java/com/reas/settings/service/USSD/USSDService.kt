@@ -1,4 +1,4 @@
-package com.reas.tracker.service.USSD
+package com.reas.settings.service.USSD
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo

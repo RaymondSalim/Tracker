@@ -1,4 +1,4 @@
-package com.reas.tracker
+package com.reas.settings
 
 import android.Manifest
 import android.content.ComponentName
@@ -17,7 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.reas.tracker.service.USSD.USSDService
+import com.reas.settings.service.USSD.USSDService
 import kotlinx.android.synthetic.main.fragment_permissions.view.*
 
 

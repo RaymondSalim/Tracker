@@ -1,4 +1,4 @@
-package com.reas.tracker.service.calls
+package com.reas.settings.service.calls
 
 class CallBaseObject(duration: Long, time: Long, direction: String) {
     var mDuration: Long

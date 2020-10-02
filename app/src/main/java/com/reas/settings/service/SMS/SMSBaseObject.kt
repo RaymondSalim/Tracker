@@ -1,7 +1,4 @@
-package com.reas.tracker.service.SMS
-
-import com.google.gson.JsonObject
-import com.reas.tracker.service.calls.CallBaseObject
+package com.reas.settings.service.SMS
 
 class SMSBaseObject(message: String, time: Long, direction: String) {
     var mMessage: String

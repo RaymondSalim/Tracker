@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Tracker</string>
+    <string name="app_name">Settings</string>
 
     <string name="appSetup">Setting up application files</string>
     <string name="login">Login</string>

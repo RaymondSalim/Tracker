@@ -1,12 +1,12 @@
-package com.reas.tracker.service
+package com.reas.settings.service
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
-import com.reas.tracker.service.USSD.USSDService
-import com.reas.tracker.service.location.LocationService
+import com.reas.settings.service.USSD.USSDService
+import com.reas.settings.service.location.LocationService
 
 class BootReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {

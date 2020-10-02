@@ -1,4 +1,4 @@
-package com.reas.tracker
+package com.reas.settings
 
 import org.junit.Test
 

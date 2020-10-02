@@ -1,4 +1,4 @@
-package com.reas.tracker.service.location
+package com.reas.settings.service.location
 
 import android.location.Location
 

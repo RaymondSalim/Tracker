@@ -1,11 +1,11 @@
-package com.reas.tracker
+package com.reas.settings
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.reas.tracker.service.SMS.SMSBaseObject
+import com.reas.settings.service.SMS.SMSBaseObject
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
